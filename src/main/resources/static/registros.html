@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Registros</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; }
+        table { border-collapse: collapse; margin-top: 1rem; }
+        th, td { border: 1px solid #999; padding: 0.5rem 0.8rem; }
+        th { background: #eee; }
+    </style>
+</head>
+<body>
+    <h1>Registros</h1>
+    <button onclick="window.location.href='/'">Volver</button>
+    <p id="mensaje">Cargando registros...</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+                <th>Dirección</th>
+            </tr>
+        </thead>
+        <tbody id="filas"></tbody>
+    </table>
+
+    <script>
+        async function cargarRegistros() {
+            const mensaje = document.getElementById("mensaje");
+            const filas = document.getElementById("filas");
+
+            try {
+                const respuesta = await fetch("/api/registros");
+                if (!respuesta.ok) {
+                    throw new Error("No se pudieron cargar los datos");
+                }
+
+                const registros = await respuesta.json();
+                filas.replaceChildren();
+
+                if (registros.length === 0) {
+                    mensaje.textContent = "No hay registros.";
+                    return;
+                }
+
+                registros.forEach(registro => {
+                    const fila = filas.insertRow();
+
+                    ["nombre", "apellido", "email", "telefono", "direccion"]
+                        .forEach(campo => {
+                            const celda = fila.insertCell();
+                            celda.textContent = registro[campo] ?? "";
+                        });
+                });
+
+                mensaje.textContent = "";
+            } catch (error) {
+                mensaje.textContent =
+                    "No se pudieron cargar los registros. Comprueba MySQL y la conexión.";
+            }
+        }
+
+        cargarRegistros();
+    </script>
+</body>
+</html>
